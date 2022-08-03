@@ -1,0 +1,6 @@
+---
+
+- name: Restart services
+  docker_compose:
+    project_src: ~/monitoring
+    restarted: yes

@@ -1,0 +1,27 @@
+---
+
+- hosts: mongo_kafka_servers
+  strategy: free
+  become: yes
+  vars_files:
+    - ./vars.yml
+  roles:
+    - install_docker
+    - deploy_mongo_kafka
+
+- hosts: monitoring_servers
+  strategy: free
+  become: yes
+  vars_files:
+  - ./vars.yml
+  roles:
+    - install_docker
+    - deploy_monitoring
+
+- hosts: app_servers
+  become: yes
+  vars_files:
+  - ./vars.yml
+  roles:
+    - install_docker
+    - deploy_app

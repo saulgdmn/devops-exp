@@ -1,0 +1,28 @@
+---
+
+- name: Create project directory
+  file:
+    path: ~/app
+    state: directory
+
+- name: Copy project files and dirs
+  copy:
+    src: ./
+    dest: ~/app/
+  notify:
+    - Restart services
+
+- name: Copy config for Prometheus
+  template:
+    src: "{{item.src}}"
+    dest: "~/app/{{item.dest}}"
+  loop: 
+    - {src: 'producer.env.j2', dest: 'producer.env'}
+    - {src: 'consumer.env.j2', dest: 'consumer.env'}
+  notify:
+    - Restart services
+
+- name: Run services
+  docker_compose:
+    project_src: ~/app
+    state: present

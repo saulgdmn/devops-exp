@@ -1,0 +1,89 @@
+version: "2"
+
+services:
+  zookeeper:
+    image: 'bitnami/zookeeper:latest'
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    volumes:
+      - "zookeeper_data:/bitnami"
+    
+  kafka:
+    image: 'bitnami/kafka:latest'
+    container_name: kafka
+    ports:
+      - "9093:9093"
+    environment:
+      - KAFKA_HEAP_OPTS=-Xmx1024m -Xms1024m
+      - KAFKA_BROKER_ID=1
+      - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=CLIENT://:9092,EXTERNAL://0.0.0.0:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9092,EXTERNAL://{{ mongo_kafka_public_ip }}:9093
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=CLIENT
+    depends_on:
+      - zookeeper
+    restart: on-failure
+    volumes:
+      - "kafka_data:/bitnami"
+  
+  mongo:
+    image: 'mongo'
+    container_name: 'mongo'
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME={{mongo_username}}
+      - MONGO_INITDB_ROOT_PASSWORD={{mongo_password}}
+    volumes:
+      - "mongo_data:/data/db"
+    ports:
+      - '27017:27017'
+  
+  node_exporter:
+    image: "prom/node-exporter"
+    container_name: "node_exporter"
+    network_mode: host
+    pid: host
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude'
+      - '^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)'
+
+  kafka_exporter:
+    container_name: "kafka_exporter"
+    image: "quay.io/cloudhut/kminion:master"
+    ports:
+      - "9308:8080"
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_BROKERS: kafka:9092
+    restart: on-failure
+
+  mongo_exporter:
+    container_name: "mongo_exporter"
+    image: "percona/mongodb_exporter:0.33.0"
+    ports:
+      - "9216:9216"
+    command:
+      - '--mongodb.uri=mongodb://{{mongo_username}}:{{mongo_password}}@mongo:27017'
+      - '--discovering-mode'
+      - '--compatible-mode'
+      - '--collect-all'
+
+volumes:
+  zookeeper_data:
+    driver: local
+  kafka_data:
+    driver: local
+  mongo_data:
+    driver: local

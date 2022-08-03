@@ -1,0 +1,6 @@
+---
+
+- name: Restart services
+  docker_compose:
+    project_src: ~/app
+    restarted: yes

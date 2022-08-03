@@ -1,0 +1,25 @@
+---
+
+- name: Create project directory
+  file:
+    path: ~/monitoring
+    state: directory
+
+- name: Copy project files and dirs
+  copy:
+    src: ./
+    dest: ~/monitoring/
+  notify:
+    - Restart services
+
+- name: Copy config for Prometheus
+  template:
+    src: prometheus.yml.j2
+    dest: ~/monitoring/prometheus.yml
+  notify:
+    - Restart services
+
+- name: Run services
+  docker_compose:
+    project_src: ~/monitoring
+    state: present

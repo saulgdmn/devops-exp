@@ -1,0 +1,45 @@
+---
+
+- name: Install apt-transport-https
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - lsb-release
+      - gnupg
+    state: latest
+    update_cache: true
+    
+
+- name: Add signing key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Add repository into source list
+  apt_repository:
+    repo: deb https://download.docker.com/linux/ubuntu bionic stable
+    state: present
+    filename: docker
+
+- name: Install Docker
+  apt:
+    name: 
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-compose-plugin
+    state: latest
+    update_cache: true
+
+- name: Install pip3
+  apt:
+    name: python3-pip
+    state: present
+
+- name: Pip install docker and docker-compose for Ansibles modules
+  pip:
+    name:
+      - docker
+      - docker-compose
+    state: present

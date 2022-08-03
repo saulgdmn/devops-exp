@@ -1,0 +1,5 @@
+---
+
+mongo_kafka_public_ip: 10.10.10.11
+mongo_username: username
+mongo_password: password

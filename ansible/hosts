@@ -1,0 +1,8 @@
+[monitoring_servers]
+10.10.10.10
+
+[mongo_kafka_servers]
+10.10.10.11
+
+[app_servers]
+10.10.10.12

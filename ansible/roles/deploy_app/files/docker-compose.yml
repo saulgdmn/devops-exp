@@ -1,0 +1,18 @@
+version: '3.9'
+
+services:
+  consumer:
+    build:
+      context: .
+      dockerfile: Dockerfile.consumer
+    container_name: consumer
+    env_file:
+      - 'consumer.env'
+
+  producer:
+    build:
+      context: .
+      dockerfile: Dockerfile.producer
+    container_name: producer
+    env_file:
+      - 'producer.env'
